@@ -5,8 +5,10 @@ const express = require("express");
 const app = express();
 // express() creates a express application (my server), and here now app holds my server.
 
+
 app.use(express.json());
 // app.use() uses any functionality you give in it, here express.json() reads any incomming req that has JSON data and converts into usable object.
+
 
 app.get("/", (req, res) => {
     res.send("API is working");
@@ -14,11 +16,11 @@ app.get("/", (req, res) => {
 // app.get() look for the GET request on the Route "/", if someone does the callback function checks for what they requested in req and res is the object we use to send something back to the client.
 // res.send() here we just send a normal text.
 
+
 app.listen(3000, () => {
     console.log("server is running on port 3000");    
 });
 // app.listen() here it listens on port 3000 and () => {} callback function that runs after the server started and does what's inside it, here just prints the message to console.
-
 
 
 let users = [
@@ -27,10 +29,12 @@ let users = [
 ];
 // simulating Database using array.
 
+
 app.get("/users", (req, res) => {
     res.status(200).json(users);
 });
 // if server gets a GET request for path /users we responds with status code 200 (it availabe), and also responds with the whole users data from the array here.
+
 
 app.get("/users/:id", (req, res) => {
     const id = parseInt(req.params.id);
@@ -45,6 +49,7 @@ app.get("/users/:id", (req, res) => {
 // user.find() is just a array method.
 // if id doesn't matches the id in array, response with 404 and "user not found", if found then just return status 200 and the user with id specified.
 
+
 app.post("/users", (req, res) => {
     const { name } = req.body;
 
@@ -58,5 +63,33 @@ app.post("/users", (req, res) => {
 
     res.status(201).json(newUser)
 });
-// {users} will only save the name from the entire req.body.
-// Creates a new user object with id and name that was in the req body. then added it to the existing array.
+// { name } will only save the name from the entire req.body.
+// Creates a new user object with id and name that was in the req body. then pushes it to the existing array.
+
+
+app.put("/users/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const { name } = req.body;
+
+    const user = users.find(u => u.id === id);
+
+    if(!user) res.status(404).json({message: "User not Found"});
+    user.name = name;
+    res.json(user);
+});
+// takes the id which you want to change, takes the new name that you want to update.
+// checks if the id is present in the array. if not sends 404 not found.
+// we only use res.status() when the status is anything except 200. because if we just write res.json() it's automatically sends status 200.
+
+
+app.delete("/users/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = users.findIndex(u => u.id === id);
+
+    if(index === -1) res.status(404).json({message: "User not Found"});
+    users.splice(index, 1);
+    res.json({message: "User Deleted"})
+});
+// takes id to delete, finds it's index from the array.
+// if found deletes it, if not found 404 error.
+// we use (index === -1) and not (!index) because it treats index 0 as invalid.
